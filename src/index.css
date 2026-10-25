@@ -1,0 +1,170 @@
+/* ============================================================
+   TYPOGRAPHY: GLONIMOVE (ALL WEIGHTS WITH LOCAL & HIGH-END FALLBACKS)
+   ============================================================ */
+@font-face {
+  font-family: 'Glonimove';
+  font-weight: 100;
+  src: local('Glonimove-Thin'), local('Glonimove Thin'), local('Glonimove');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Glonimove';
+  font-weight: 200;
+  src: local('Glonimove-ExtraLight'), local('Glonimove ExtraLight'), local('Glonimove');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Glonimove';
+  font-weight: 300;
+  src: local('Glonimove-Light'), local('Glonimove Light'), local('Glonimove');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Glonimove';
+  font-weight: 400;
+  src: local('Glonimove-Regular'), local('Glonimove Regular'), local('Glonimove');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Glonimove';
+  font-weight: 500;
+  src: local('Glonimove-Medium'), local('Glonimove Medium'), local('Glonimove');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Glonimove';
+  font-weight: 600;
+  src: local('Glonimove-SemiBold'), local('Glonimove SemiBold'), local('Glonimove');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Glonimove';
+  font-weight: 700;
+  src: local('Glonimove-Bold'), local('Glonimove Bold'), local('Glonimove');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Glonimove';
+  font-weight: 800;
+  src: local('Glonimove-ExtraBold'), local('Glonimove ExtraBold'), local('Glonimove');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Glonimove';
+  font-weight: 900;
+  src: local('Glonimove-Black'), local('Glonimove Black'), local('Glonimove');
+  font-display: swap;
+}
+
+:root {
+  --color-cream: #F5F8E2;
+  --color-dark: #1A1A1A;
+  --color-coral: #F75E59;
+  
+  --font-main: 'Glonimove', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-cream);
+  color: var(--color-dark);
+  font-family: var(--font-main);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-dark);
+  color: var(--color-cream);
+}
+
+/* Hide scrollbars across all browsers while preserving full scrolling functionality */
+html, body, * {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+::-webkit-scrollbar {
+  display: none !important;
+  width: 0px !important;
+  height: 0px !important;
+  background: transparent !important;
+}
+
+
+/* Subtle noise texture overlay */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 99999;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  /* Keep the grain on its own composited layer so scrolling never re-rasters it. */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Keyframe animations */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes copyTooltipIn {
+  0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+}
+
+@keyframes whisper-waveform {
+  0%, 100% { transform: scaleY(0.5); }
+  50% { transform: scaleY(1.15); }
+}
+
+@keyframes feed-scroll {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-40%); }
+}
+
+/* Hide default mobile tap highlight */
+input, button, a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ============================================================
+   FORM FIELDS
+   Placeholders stay light so an empty field never reads as filled.
+   ============================================================ */
+.field::placeholder {
+  color: rgba(26, 26, 26, 0.3);
+  font-weight: 500;
+  opacity: 1;
+}
+
+.field {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.field:focus {
+  box-shadow: 0 0 0 3px rgba(247, 94, 89, 0.18);
+}
