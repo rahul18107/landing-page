@@ -1,4 +1,5 @@
 import React from 'react';
+import useIsMobile from '../lib/useIsMobile';
 
 const PRINCIPLES = [
   {
@@ -16,7 +17,7 @@ const PRINCIPLES = [
 ];
 
 export default function PrivacyStatement() {
-  const isMobile = typeof window !== 'undefined' ? window.innerWidth <= 768 : false;
+  const isMobile = useIsMobile();
 
   return (
     <section
@@ -33,7 +34,7 @@ export default function PrivacyStatement() {
         <div style={{ maxWidth: 760, marginBottom: isMobile ? 48 : 72 }}>
           <span
             style={{
-              fontFamily: "'Glonimove', sans-serif",
+              fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
               fontWeight: 800,
               fontSize: 13,
               letterSpacing: '0.1em',
@@ -48,7 +49,7 @@ export default function PrivacyStatement() {
 
           <h2
             style={{
-              fontFamily: "'Glonimove', sans-serif",
+              fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
               fontWeight: 900,
               fontSize: isMobile ? 32 : 54,
               lineHeight: 1.08,
@@ -64,7 +65,7 @@ export default function PrivacyStatement() {
 
           <p
             style={{
-              fontFamily: "'Glonimove', sans-serif",
+              fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
               fontWeight: 500,
               fontSize: isMobile ? 16 : 20,
               lineHeight: 1.6,
@@ -91,7 +92,7 @@ export default function PrivacyStatement() {
             <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div
                 style={{
-                  fontFamily: "'Glonimove', sans-serif",
+                  fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                   fontWeight: 900,
                   fontSize: 14,
                   color: '#F75E59',
@@ -103,7 +104,7 @@ export default function PrivacyStatement() {
 
               <h3
                 style={{
-                  fontFamily: "'Glonimove', sans-serif",
+                  fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                   fontWeight: 800,
                   fontSize: 20,
                   color: '#F5F8E2',
@@ -116,7 +117,7 @@ export default function PrivacyStatement() {
 
               <p
                 style={{
-                  fontFamily: "'Glonimove', sans-serif",
+                  fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                   fontWeight: 400,
                   fontSize: 15,
                   lineHeight: 1.6,

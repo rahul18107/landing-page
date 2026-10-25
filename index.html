@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -6,10 +6,22 @@
     <meta name="theme-color" content="#F75E59" />
     <title>XOOZ | Your Day, Remembered. Memory software for the watch you wear</title>
     <meta name="description" content="XOOZ turns the smartwatch you already wear into a personal memory layer. Record your day, get an AI recap, and search any conversation, with no extra device to buy, charge, or carry." />
+
+    <!-- SEO & social preview. og:image = hosted brand mark; swap in a
+         dedicated 1200x630 banner before launch. TODO: canonical + og:url
+         once the production domain is final. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="XOOZ" />
+    <meta property="og:title" content="XOOZ | Your Day, Remembered. Memory software for the watch you wear" />
+    <meta property="og:description" content="XOOZ turns the smartwatch you already wear into a personal memory layer. Record your day, get an AI recap, and search any conversation, with no extra device to buy, charge, or carry." />
+    <meta property="og:image" content="https://res.cloudinary.com/vx59z5ll/image/upload/f_auto/q_auto/e_trim/Bold_XO_OZ_Geometric_Logo.png" />
+    <meta property="og:image:alt" content="XOOZ logo" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="XOOZ | Your Day, Remembered." />
+    <meta name="twitter:description" content="XOOZ turns the smartwatch you already wear into a personal memory layer." />
+    <meta name="twitter:image" content="https://res.cloudinary.com/vx59z5ll/image/upload/f_auto/q_auto/e_trim/Bold_XO_OZ_Geometric_Logo.png" />
     
-    <!-- Favicon — XOZ artwork on the site's cream chip -->
-    <link rel="icon" type="image/png" href="data:image/png;base64,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" />
-        <link rel="icon" type="image/png" href="/favicon.png" />
+    <!-- Favicon — XOZ artwork on the site's cream chip -->        <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="icon" type="image/svg+xml" href="/logo-favicon.svg" />
     
     <!-- Preload Fonts & Fallback -->

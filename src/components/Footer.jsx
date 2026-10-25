@@ -1,12 +1,13 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
+import useIsMobile from '../lib/useIsMobile';
 
 // Same trimmed logo asset as the navbar — e_trim cuts the transparent padding.
 const BRAND_LOGO_URL =
   'https://res.cloudinary.com/vx59z5ll/image/upload/f_auto/q_auto/e_trim/Bold_XO_OZ_Geometric_Logo.png';
 
 export default function Footer({ onOpenWaitlist }) {
-  const isMobile = typeof window !== 'undefined' ? window.innerWidth <= 768 : false;
+  const isMobile = useIsMobile();
 
   return (
     <footer
@@ -55,7 +56,7 @@ export default function Footer({ onOpenWaitlist }) {
 
             <p
               style={{
-                fontFamily: "'Glonimove', sans-serif",
+                fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                 fontWeight: 600,
                 fontSize: 16,
                 color: '#1A1A1A',
@@ -69,7 +70,7 @@ export default function Footer({ onOpenWaitlist }) {
 
             <p
               style={{
-                fontFamily: "'Glonimove', sans-serif",
+                fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                 fontWeight: 400,
                 fontSize: 13,
                 color: 'rgba(26, 26, 26, 0.6)',
@@ -92,7 +93,7 @@ export default function Footer({ onOpenWaitlist }) {
               border: 'none',
               borderRadius: 9999,
               padding: '14px 28px',
-              fontFamily: "'Glonimove', sans-serif",
+              fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
               fontWeight: 700,
               fontSize: 15,
               cursor: 'pointer',

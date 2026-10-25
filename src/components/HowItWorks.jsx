@@ -1,4 +1,5 @@
 import React from 'react';
+import useIsMobile from '../lib/useIsMobile';
 
 const STEPS = [
   {
@@ -43,10 +44,10 @@ const US = [
 ];
 
 export default function HowItWorks() {
-  const isMobile = typeof window !== 'undefined' ? window.innerWidth <= 768 : false;
+  const isMobile = useIsMobile();
 
   const labelStyle = {
-    fontFamily: "'Glonimove', sans-serif",
+    fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
     fontWeight: 800,
     fontSize: 12,
     letterSpacing: '0.1em',
@@ -80,7 +81,7 @@ export default function HowItWorks() {
 
           <h2
             style={{
-              fontFamily: "'Glonimove', sans-serif",
+              fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
               fontWeight: 900,
               fontSize: isMobile ? 32 : 54,
               lineHeight: 1.08,
@@ -96,7 +97,7 @@ export default function HowItWorks() {
 
           <p
             style={{
-              fontFamily: "'Glonimove', sans-serif",
+              fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
               fontWeight: 500,
               fontSize: isMobile ? 16 : 20,
               lineHeight: 1.6,
@@ -133,7 +134,7 @@ export default function HowItWorks() {
             >
               <span
                 style={{
-                  fontFamily: "'Glonimove', sans-serif",
+                  fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                   fontWeight: 900,
                   fontSize: isMobile ? 18 : 24,
                   letterSpacing: '-0.02em',
@@ -145,7 +146,7 @@ export default function HowItWorks() {
 
               <h3
                 style={{
-                  fontFamily: "'Glonimove', sans-serif",
+                  fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                   fontWeight: 800,
                   fontSize: isMobile ? 22 : 28,
                   letterSpacing: '-0.03em',
@@ -158,7 +159,7 @@ export default function HowItWorks() {
 
               <p
                 style={{
-                  fontFamily: "'Glonimove', sans-serif",
+                  fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                   fontWeight: 500,
                   fontSize: isMobile ? 15 : 17,
                   lineHeight: 1.6,
@@ -189,7 +190,7 @@ export default function HowItWorks() {
 
           <h3
             style={{
-              fontFamily: "'Glonimove', sans-serif",
+              fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
               fontWeight: 900,
               fontSize: isMobile ? 26 : 38,
               lineHeight: 1.1,
@@ -203,7 +204,7 @@ export default function HowItWorks() {
 
           <p
             style={{
-              fontFamily: "'Glonimove', sans-serif",
+              fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
               fontWeight: 500,
               fontSize: isMobile ? 15 : 17,
               lineHeight: 1.6,
@@ -238,7 +239,7 @@ export default function HowItWorks() {
                   <li
                     key={i}
                     style={{
-                      fontFamily: "'Glonimove', sans-serif",
+                      fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                       fontWeight: 500,
                       fontSize: 15,
                       lineHeight: 1.45,
@@ -271,7 +272,7 @@ export default function HowItWorks() {
                   <li
                     key={i}
                     style={{
-                      fontFamily: "'Glonimove', sans-serif",
+                      fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                       fontWeight: 500,
                       fontSize: 15,
                       lineHeight: 1.45,
@@ -290,7 +291,7 @@ export default function HowItWorks() {
 
           <p
             style={{
-              fontFamily: "'Glonimove', sans-serif",
+              fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
               fontWeight: 600,
               fontSize: 14,
               lineHeight: 1.5,

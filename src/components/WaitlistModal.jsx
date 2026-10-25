@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Check, ArrowRight, Loader2 } from 'lucide-react';
 import {
   supabase,
@@ -17,6 +17,9 @@ export default function WaitlistModal({ isOpen, onClose, preset = null }) {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const dialogRef = useRef(null);
+  const emailRef = useRef(null);
+  const doneRef = useRef(null);
 
   // Fresh form every time the dialog is opened. `preset` shows the confirmation
   // screen on open (used for Google signups that completed while redirecting).
@@ -30,15 +33,61 @@ export default function WaitlistModal({ isOpen, onClose, preset = null }) {
     }
   }, [isOpen, preset]);
 
-  // Escape closes the dialog.
+  // Lock body scroll while the dialog is up so the page can't scroll behind
+  // the backdrop.
   useEffect(() => {
     if (!isOpen) return undefined;
-    const onKey = (e) => {
-      if (e.key === 'Escape') onClose();
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
     };
+  }, [isOpen]);
+
+  // Escape closes the dialog; Tab is trapped inside it so focus can never
+  // reach the page behind the modal.
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (e.key !== 'Tab' || !dialogRef.current) return;
+
+      const items = dialogRef.current.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (!items.length) return;
+
+      const active = document.activeElement;
+      const inside = dialogRef.current.contains(active);
+      const first = items[0];
+      const last = items[items.length - 1];
+
+      if (e.shiftKey) {
+        if (!inside || active === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (!inside || active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [isOpen, onClose]);
+
+  // Focus the active screen's first control: the email field for the form,
+  // the Done button once a confirmation is showing (email submit or Google).
+  useEffect(() => {
+    if (!isOpen) return;
+    const target = submitted ? doneRef.current : emailRef.current;
+    if (target) target.focus();
+  }, [isOpen, submitted]);
 
   if (!isOpen) return null;
 
@@ -104,7 +153,7 @@ export default function WaitlistModal({ isOpen, onClose, preset = null }) {
     border: '1.5px solid rgba(26, 26, 26, 0.2)',
     color: '#1A1A1A',
     fontSize: 15,
-    fontFamily: "'Glonimove', sans-serif",
+    fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
     fontWeight: 600,
     outline: 'none',
     boxSizing: 'border-box',
@@ -115,6 +164,9 @@ export default function WaitlistModal({ isOpen, onClose, preset = null }) {
       role="dialog"
       aria-modal="true"
       aria-label="Get early access"
+      onMouseDown={(e) => {
+        if (e.button === 0) onClose();
+      }}
       style={{
         position: 'fixed',
         inset: 0,
@@ -129,6 +181,8 @@ export default function WaitlistModal({ isOpen, onClose, preset = null }) {
       }}
     >
       <div
+        ref={dialogRef}
+        onMouseDown={(e) => e.stopPropagation()}
         style={{
           background: '#F5F8E2',
           color: '#1A1A1A',
@@ -172,7 +226,7 @@ export default function WaitlistModal({ isOpen, onClose, preset = null }) {
             
             <h3
               style={{
-                fontFamily: "'Glonimove', sans-serif",
+                fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                 fontWeight: 900,
                 fontSize: 28,
                 lineHeight: 1.15,
@@ -202,6 +256,7 @@ export default function WaitlistModal({ isOpen, onClose, preset = null }) {
                 Email Address
               </label>
               <input
+                ref={emailRef}
                 id="waitlist-email"
                 type="email"
                 inputMode="email"
@@ -235,7 +290,7 @@ export default function WaitlistModal({ isOpen, onClose, preset = null }) {
                       alignItems: 'center',
                       gap: 7,
                       margin: 0,
-                      fontFamily: "'Glonimove', sans-serif",
+                      fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                       fontSize: 13,
                       fontWeight: 700,
                       letterSpacing: '-0.01em',
@@ -267,7 +322,7 @@ export default function WaitlistModal({ isOpen, onClose, preset = null }) {
                   border: 'none',
                   borderRadius: 9999,
                   padding: '16px',
-                  fontFamily: "'Glonimove', sans-serif",
+                  fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                   fontWeight: 800,
                   fontSize: 15,
                   cursor: submitting ? 'wait' : 'pointer',
@@ -299,7 +354,7 @@ export default function WaitlistModal({ isOpen, onClose, preset = null }) {
               <span style={{ flex: 1, height: 1, background: 'rgba(26, 26, 26, 0.15)' }} />
               <span
                 style={{
-                  fontFamily: "'Glonimove', sans-serif",
+                  fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                   fontSize: 12,
                   fontWeight: 700,
                   letterSpacing: '0.08em',
@@ -328,7 +383,7 @@ export default function WaitlistModal({ isOpen, onClose, preset = null }) {
                 background: '#1A1A1A',
                 color: '#ffffff',
                 border: 'none',
-                fontFamily: "'Glonimove', sans-serif",
+                fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                 fontWeight: 700,
                 fontSize: 15,
                 cursor: 'pointer',
@@ -383,7 +438,7 @@ export default function WaitlistModal({ isOpen, onClose, preset = null }) {
               <Check size={28} color="#F75E59" strokeWidth={3} />
             </div>
 
-            <h3 style={{ fontFamily: "'Glonimove', sans-serif", fontWeight: 900, fontSize: 26, margin: '0 0 10px' }}>
+            <h3 style={{ fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif", fontWeight: 900, fontSize: 26, margin: '0 0 10px' }}>
               Thanks!
             </h3>
 
@@ -408,7 +463,7 @@ export default function WaitlistModal({ isOpen, onClose, preset = null }) {
                 gap: 7,
                 width: '100%',
                 justifyContent: 'center',
-                fontFamily: "'Glonimove', sans-serif",
+                fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                 fontWeight: 700,
                 fontSize: 14,
                 color: '#1A1A1A',
@@ -423,6 +478,7 @@ export default function WaitlistModal({ isOpen, onClose, preset = null }) {
             </a>
 
             <button
+              ref={doneRef}
               onClick={onClose}
               style={{
                 width: '100%',
@@ -431,7 +487,7 @@ export default function WaitlistModal({ isOpen, onClose, preset = null }) {
                 border: 'none',
                 borderRadius: 9999,
                 padding: '14px',
-                fontFamily: "'Glonimove', sans-serif",
+                fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                 fontWeight: 700,
                 fontSize: 15,
                 cursor: 'pointer',

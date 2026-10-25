@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowRight, Menu, X } from 'lucide-react';
 import { CARD_PROGRESS_EVENT } from '../lib/cardProgress';
+import useIsMobile from '../lib/useIsMobile';
 
 const SECTIONS = [
   { id: 'how-it-works', label: 'How it works' },
@@ -16,9 +17,15 @@ export default function Navbar({ onOpenWaitlist }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
-  const [isMobile, setIsMobile] = useState(
-    typeof window !== 'undefined' ? window.innerWidth <= 768 : false
-  );
+  // Drawer focus bookkeeping. Focus must land somewhere sensible when the
+  // fullscreen menu opens (close button) and return to the opener when it
+  // closes — but never on first mount, when the menu simply started closed.
+  const menuBtnRef = useRef(null);
+  const closeBtnRef = useRef(null);
+  const wasOpenRef = useRef(false);
+
+  // Live breakpoint, shared hook — same flip point as every other section.
+  const isMobile = useIsMobile();
 
   // Card scroll progress coming from the pinned watch-card section
   const [cardProgress, setCardProgress] = useState({
@@ -37,11 +44,17 @@ export default function Navbar({ onOpenWaitlist }) {
   // the reader is flying past sections faster than the choreography can play.
   const scrollSpeedRef = useRef(0);
 
+  // Drawer focus: entering the menu focuses its close button, leaving moves
+  // focus back to the hamburger. wasOpenRef keeps the mount-time run (menu
+  // starts closed) from stealing focus to the hamburger on page load.
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    if (mobileMenuOpen) {
+      closeBtnRef.current?.focus();
+    } else if (wasOpenRef.current) {
+      menuBtnRef.current?.focus();
+    }
+    wasOpenRef.current = mobileMenuOpen;
+  }, [mobileMenuOpen]);
 
   /* Scrolled state + active section. Geometry is cached and the handler runs
      at most once per frame, so scrolling never forces repeated layout reads. */
@@ -241,7 +254,7 @@ export default function Navbar({ onOpenWaitlist }) {
                 >
                   <img
                     src={BRAND_LOGO_URL}
-                    alt="XOZ, back to top"
+                    alt="XOOZ, back to top"
                     draggable={false}
                     style={{
                       height: 25,
@@ -253,7 +266,10 @@ export default function Navbar({ onOpenWaitlist }) {
               )}
 
               <button
+                ref={menuBtnRef}
                 aria-label="Open menu"
+                aria-expanded={mobileMenuOpen}
+                aria-controls="xooz-mobile-menu"
                 onClick={() => setMobileMenuOpen(true)}
                 style={{
                   background: '#1A1A1A',
@@ -314,7 +330,7 @@ export default function Navbar({ onOpenWaitlist }) {
               >
                 <img
                   src={BRAND_LOGO_URL}
-                  alt="XOZ, back to top"
+                  alt="XOOZ, back to top"
                   draggable={false}
                   style={{
                     height: 29,
@@ -358,7 +374,7 @@ export default function Navbar({ onOpenWaitlist }) {
                             style={{
                               background: 'transparent',
                               border: 'none',
-                              fontFamily: "'Glonimove', sans-serif",
+                              fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                               fontWeight: isActive ? 800 : 600,
                               fontSize: 15,
                               color: isActive ? '#F75E59' : '#1A1A1A',
@@ -388,7 +404,7 @@ export default function Navbar({ onOpenWaitlist }) {
                 onClick={onOpenWaitlist}
                 data-cursor="pointer"
                 style={{
-                  fontFamily: "'Glonimove', sans-serif",
+                  fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                   fontWeight: 700,
                   fontSize: 15,
                   background: scrolled ? '#F75E59' : '#1A1A1A',
@@ -425,6 +441,7 @@ export default function Navbar({ onOpenWaitlist }) {
       {/* Full-Screen Mobile Drawer */}
       {isMobile && (
         <div
+          id="xooz-mobile-menu"
           style={{
             position: 'fixed',
             inset: 0,
@@ -434,8 +451,14 @@ export default function Navbar({ onOpenWaitlist }) {
             flexDirection: 'column',
             padding: '24px 28px',
             opacity: mobileMenuOpen ? 1 : 0,
+            // visibility takes the closed drawer out of the accessibility tree
+            // AND the tab order, so its links are not focusable while hidden.
+            visibility: mobileMenuOpen ? 'visible' : 'hidden',
             pointerEvents: mobileMenuOpen ? 'auto' : 'none',
-            transition: 'opacity 0.3s ease',
+            // On close, let the 0.3s fade finish before visibility drops.
+            transition: mobileMenuOpen
+              ? 'opacity 0.3s ease'
+              : 'opacity 0.3s ease, visibility 0s linear 0.3s',
             height: '100dvh'
           }}
         >
@@ -443,7 +466,7 @@ export default function Navbar({ onOpenWaitlist }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' }}>
             <img
               src={BRAND_LOGO_URL}
-              alt="XOZ"
+              alt="XOOZ"
               draggable={false}
               style={{
                 height: 24,
@@ -454,6 +477,7 @@ export default function Navbar({ onOpenWaitlist }) {
               }}
             />
             <button
+              ref={closeBtnRef}
               aria-label="Close menu"
               onClick={() => setMobileMenuOpen(false)}
               style={{
@@ -486,7 +510,7 @@ export default function Navbar({ onOpenWaitlist }) {
                   background: 'none',
                   border: 'none',
                   textAlign: 'left',
-                  fontFamily: "'Glonimove', sans-serif",
+                  fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                   fontWeight: 900,
                   fontSize: 44,
                   lineHeight: 1.1,
@@ -516,7 +540,7 @@ export default function Navbar({ onOpenWaitlist }) {
                 background: '#F75E59',
                 borderRadius: 14,
                 padding: '18px 24px',
-                fontFamily: "'Glonimove', sans-serif",
+                fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                 fontWeight: 800,
                 fontSize: 18,
                 color: '#1A1A1A',
@@ -547,10 +571,7 @@ function CardDots({ total, active, variant = 'desktop' }) {
 
   return (
     <div
-      role="progressbar"
-      aria-valuemin={1}
-      aria-valuemax={total}
-      aria-valuenow={active + 1}
+      role="group"
       aria-label={`Card ${active + 1} of ${total}`}
       style={{
         display: 'flex',

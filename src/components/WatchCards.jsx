@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { emitCardProgress } from '../lib/cardProgress';
+import useIsMobile from '../lib/useIsMobile';
 
 const WATCHES = [
   {
@@ -119,9 +120,16 @@ export default function WatchCards() {
   const mobileInView = useRef(false);
 
   const [pinHeight, setPinHeight] = useState('250vh');
-  const [isMobile, setIsMobile] = useState(
-    typeof window !== 'undefined' ? window.innerWidth <= 768 : false
-  );
+  const isMobile = useIsMobile();
+
+  // Reveal bookkeeping must not survive a breakpoint change: the ref lives
+  // across renders, so after desktop -> mobile -> desktop every card would
+  // still be flagged revealed while its re-mounted inline style says
+  // opacity: 0 — invisible cards that never reveal. Fresh state per layout.
+  useEffect(() => {
+    revealedRef.current = WATCHES.map(() => false);
+    nextRevealAt.current = 0;
+  }, [isMobile]);
 
   /* ------------------------------------------------------------------ *
    * Progress reporting (drives the navbar dot indicator)
@@ -150,13 +158,6 @@ export default function WatchCards() {
     },
     [report]
   );
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth <= 768);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
 
   /* The mobile carousel fires scroll events far faster than frames; coalesce
      them so the progress read (which touches layout) runs at most once per
@@ -600,7 +601,7 @@ function SectionIntro({ mobile = false, headingRef }) {
       <h2
         ref={headingRef}
         style={{
-          fontFamily: "'Glonimove', sans-serif",
+          fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
           fontWeight: 900,
           fontSize: mobile ? 32 : 48,
           lineHeight: 1.08,
@@ -615,7 +616,7 @@ function SectionIntro({ mobile = false, headingRef }) {
       </h2>
       <p
         style={{
-          fontFamily: "'Glonimove', sans-serif",
+          fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
           fontWeight: 500,
           fontSize: mobile ? 15 : 17,
           lineHeight: 1.6,
@@ -690,7 +691,7 @@ function WatchCard({ watch, mobile = false }) {
 
       <h3
         style={{
-          fontFamily: "'Glonimove', sans-serif",
+          fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
           fontWeight: 900,
           fontSize: mobile ? 20 : 24,
           letterSpacing: '-0.03em',

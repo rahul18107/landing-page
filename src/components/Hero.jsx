@@ -4,6 +4,7 @@ import {
   startGoogleSignup,
 } from '../lib/supabase';
 import GoogleMark from './GoogleMark.jsx';
+import useIsMobile from '../lib/useIsMobile';
 
 const TICKER_WORDS = [
   "conversations",
@@ -86,7 +87,7 @@ function RotatingWord({ words }) {
     >
       <strong
         style={{
-          fontFamily: "'Glonimove', sans-serif",
+          fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
           fontWeight: 900,
           color: '#1A1A1A',
           textDecoration: 'underline',
@@ -222,7 +223,9 @@ export default function Hero({ onJoinWaitlist }) {
     }
   };
 
-  const isMobile = typeof window !== 'undefined' ? window.innerWidth <= 768 : false;
+  // Live breakpoint: a shared hook, so resizing across 768px re-lays out the
+  // hero instead of freezing whichever variant rendered first.
+  const isMobile = useIsMobile();
 
   return (
     <section
@@ -237,7 +240,8 @@ export default function Hero({ onJoinWaitlist }) {
         alignItems: 'center',
         paddingTop: isMobile ? 120 : 148,
         paddingBottom: isMobile ? 24 : 42,
-        willChange: 'margin, border-radius',
+        // No willChange here: margin/border-radius are layout properties, they
+        // never get their own compositor layer — the hint was dead weight.
         transition: 'border-radius 0.2s ease, margin 0.2s ease'
       }}
     >
@@ -256,7 +260,7 @@ export default function Hero({ onJoinWaitlist }) {
         {/* Main Headline */}
         <h1
           style={{
-            fontFamily: "'Glonimove', sans-serif",
+            fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
             fontWeight: 900,
             fontSize: isMobile ? 40 : 78,
             lineHeight: isMobile ? '46px' : '82px',
@@ -274,7 +278,7 @@ export default function Hero({ onJoinWaitlist }) {
         {/* Dynamic Category Ticker Subtitle */}
         <p
           style={{
-            fontFamily: "'Glonimove', sans-serif",
+            fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
             fontWeight: 600,
             fontSize: isMobile ? 18 : 24,
             lineHeight: isMobile ? '28px' : '34px',
@@ -308,7 +312,7 @@ export default function Hero({ onJoinWaitlist }) {
               border: '2px solid #1A1A1A',
               borderRadius: 9999,
               padding: '18px 24px',
-              fontFamily: "'Glonimove', sans-serif",
+              fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
               fontWeight: 700,
               fontSize: 16,
               cursor: 'pointer',
@@ -339,7 +343,7 @@ export default function Hero({ onJoinWaitlist }) {
                 justifyContent: 'center',
                 gap: 7,
                 margin: '12px 0 0',
-                fontFamily: "'Glonimove', sans-serif",
+                fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                 fontSize: 13,
                 fontWeight: 700,
                 letterSpacing: '-0.01em',
@@ -378,7 +382,7 @@ export default function Hero({ onJoinWaitlist }) {
         <img
           src="/phone-hands.webp"
           alt="Hands holding XOOZ memory app"
-          fetchPriority="high"
+          fetchpriority="high"
           style={{
             position: 'absolute',
             top: -31,
@@ -392,7 +396,8 @@ export default function Hero({ onJoinWaitlist }) {
 
         {/* Screen Cutout — measured from phone-hands.webp: the display glass sits at
             x 1574-2521 / y 332-2415 (of 4096x2731), mapped onto the 1061x707 img
-            which is placed at (-85, -31). Video fills this rect edge-to-edge. */}
+            which is placed at (-85, -31). The video covers the cutout at 85%
+            height (src still applied to the remaining 15% — see bg #E8E7E6). */}
         <div
           style={{
             position: 'absolute',
@@ -409,12 +414,13 @@ export default function Hero({ onJoinWaitlist }) {
           {/* Cloudinary Generated iPhone Video replacing the mock screen UI */}
           <video
             src="https://res.cloudinary.com/vx59z5ll/video/upload/so_0.5/gemini_generated_video_407c5c74.mp4"
+            poster="/screen-poster.jpg"
             autoPlay
             muted
             loop
             playsInline
             preload="auto"
-            fetchPriority="high"
+            fetchpriority="high"
             style={{
               position: 'absolute',
               top: 0,

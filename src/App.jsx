@@ -6,12 +6,18 @@ import HowItWorks from './components/HowItWorks.jsx';
 import PrivacyStatement from './components/PrivacyStatement.jsx';
 import Footer from './components/Footer.jsx';
 import WaitlistModal from './components/WaitlistModal.jsx';
-import WatchCards from './components/WatchCards';
+import WatchCards from './components/WatchCards.jsx';
 import {
   supabase,
   supabaseConfigured,
   WAITLIST_PENDING_KEY,
 } from './lib/supabase';
+
+// Dev-only chatter: keeps [auth]/[waitlist] logs out of the production bundle
+// (import.meta.env.DEV inlines to false in the vite build).
+const debug = (...args) => {
+  if (import.meta.env.DEV) console.log(...args);
+};
 
 const PENDING_MAX_AGE = 15 * 60 * 1000; // abandoned flows expire after 15 min
 
@@ -44,7 +50,9 @@ export default function App() {
       }
       if (!isOAuthReturn) return;
       const googleEmail = session?.user?.email;
-      console.log(`[waitlist] completing Google signup via ${source}`, googleEmail);
+      if (import.meta.env.DEV) {
+        debug(`[waitlist] completing Google signup via ${source}`, googleEmail);
+      }
       if (!googleEmail) return;
       localStorage.removeItem(WAITLIST_PENDING_KEY);
       try {
@@ -55,7 +63,9 @@ export default function App() {
           // Unique-violation (already on the list) still counts as success.
           console.error('[waitlist] Google signup insert failed:', insertError);
         } else {
-          console.log('[waitlist] Google email stored in waitlist table');
+        if (import.meta.env.DEV) {
+          debug('[waitlist] Google email stored in waitlist table');
+        }
         }
       } catch (err) {
         console.error('[waitlist] Google signup insert threw:', err);
@@ -69,7 +79,9 @@ export default function App() {
     // otherwise slip through before the listener exists.
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('[auth] state change:', event, session?.user?.email ?? null);
+        if (import.meta.env.DEV) {
+          debug('[auth] state change:', event, session?.user?.email ?? null);
+        }
         // Both INITIAL_SESSION (already had a session from a previous visit)
         // and SIGNED_IN (fresh tokens from the redirect) carry the user.
         finishPendingGoogleSignup(session, `event:${event}`);
