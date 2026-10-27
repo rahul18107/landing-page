@@ -9,9 +9,13 @@ const SECTIONS = [
   { id: 'privacy', label: 'Privacy' }
 ];
 
-// e_trim cuts the transparent padding so the img can be sized to the artwork.
-const BRAND_LOGO_URL =
-  'https://res.cloudinary.com/vx59z5ll/image/upload/f_auto/q_auto/e_trim/Bold_XO_OZ_Geometric_Logo.png';
+// One number controls the brand mark in BOTH navbar pills — they are two
+// separate JSX branches (desktop vs mobile), each with its own <img>, so
+// editing one file line never changed the variant you were looking at.
+const BRAND_LOGO_HEIGHT = 44;
+// Local, pre-trimmed copy of the Cloudinary logo (e_trim baked in): no CDN
+// transform dependency, and the stable path is cached reliably.
+const BRAND_LOGO_URL = '/logo-mark.png';
 
 export default function Navbar({ onOpenWaitlist }) {
   const [scrolled, setScrolled] = useState(false);
@@ -249,6 +253,9 @@ export default function Navbar({ onOpenWaitlist }) {
                     display: 'flex',
                     alignItems: 'center',
                     cursor: 'pointer',
+                    // Same optical centering as the desktop pill: the artwork's
+                    // ink mass sits ~4.5px above its box center.
+                    transform: 'translateY(4.5px)',
                     userSelect: 'none'
                   }}
                 >
@@ -257,7 +264,7 @@ export default function Navbar({ onOpenWaitlist }) {
                     alt="XOOZ, back to top"
                     draggable={false}
                     style={{
-                      height: 25,
+                      height: BRAND_LOGO_HEIGHT,
                       width: 'auto',
                       display: 'block'
                     }}
@@ -323,7 +330,15 @@ export default function Navbar({ onOpenWaitlist }) {
                   display: 'flex',
                   alignItems: 'center',
                   cursor: 'pointer',
-                  padding: '4px 6px',
+                  // No padding: the hover cursor-wrap hugs the artwork itself,
+                  // not a padded box around it (matches the mobile wrapper).
+                  padding: 0,
+                  // Optical centering: the artwork's ink mass sits ~4.5px above
+                  // its geometric center (measured), so the box-centered mark
+                  // reads as floating high. Nudge down to center the MASS.
+                  // The wrapper (not the img) carries the transform so the
+                  // cursor-wrap rect follows the shifted mark.
+                  transform: 'translateY(4.5px)',
                   userSelect: 'none',
                   flexShrink: 0
                 }}
@@ -333,7 +348,7 @@ export default function Navbar({ onOpenWaitlist }) {
                   alt="XOOZ, back to top"
                   draggable={false}
                   style={{
-                    height: 29,
+                    height: BRAND_LOGO_HEIGHT,
                     width: 'auto',
                     display: 'block'
                   }}

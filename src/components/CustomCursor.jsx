@@ -25,25 +25,46 @@ function getDeformedPoints(cx, cy, radius, frame, isExpanded) {
   return points;
 }
 
-// "Logo hug" easter egg: 8-point rounded-square outline laid out at the edge
-// midpoints and inset corners of the logo box, with its own slow timing and a
-// much smaller amplitude than the button wobble so the two reads differ.
+// "Logo hug" easter egg: the outline is sampled densely ALONG the true
+// rounded-square path (straight edges + quarter-circle corner arcs), so the
+// closed spline traces a clean square. The wobble is a uniform breathe --
+// the whole square scales a touch -- rather than per-point deformation,
+// which kept the shape crisp instead of sagging into a diamond. Timing is
+// slow, and the amplitude stays a fraction of the button wobble.
 function getLogoHugPoints(cx, cy, halfW, halfH, frame) {
-  const inset = 0.82;
-  const base = [
-    [0, -halfH],
-    [halfW * inset, -halfH * inset],
-    [halfW, 0],
-    [halfW * inset, halfH * inset],
-    [0, halfH],
-    [-halfW * inset, halfH * inset],
-    [-halfW, 0],
-    [-halfW * inset, -halfH * inset]
-  ];
-  return base.map(([px, py], i) => {
-    const wave = Math.sin(frame / 62 + i * 0.9) * 0.6;
-    return [cx + px + wave, cy + py + wave * 0.5];
-  });
+  const scale = 1 + Math.sin(frame / 64) * 0.025; // gentle breathe
+  const w = halfW * scale;
+  const h = halfH * scale;
+  const r = Math.min(w, h) * 0.34; // corner radius
+  const points = [];
+  const steps = 6; // points per segment; ~44 points total
+
+  const seg = (x1, y1, x2, y2) => {
+    for (let i = 0; i < steps; i++) {
+      const t = i / steps;
+      points.push([cx + x1 + (x2 - x1) * t, cy + y1 + (y2 - y1) * t]);
+    }
+  };
+  const arc = (ox, oy, a1, a2) => {
+    for (let i = 0; i < steps; i++) {
+      const a = a1 + (a2 - a1) * (i / steps);
+      points.push([cx + ox + Math.cos(a) * r, cy + oy + Math.sin(a) * r]);
+    }
+  };
+
+  const cw = w - r; // corner arc offset, x
+  const ch = h - r; // corner arc offset, y
+
+  arc(cw, -ch, -Math.PI / 2, 0); // top-right corner
+  seg(w, -ch, w, ch); // right edge
+  arc(cw, ch, 0, Math.PI / 2); // bottom-right corner
+  seg(cw, h, -cw, h); // bottom edge
+  arc(-cw, ch, Math.PI / 2, Math.PI); // bottom-left corner
+  seg(-w, ch, -w, -ch); // left edge
+  arc(-cw, -ch, Math.PI, Math.PI * 1.5); // top-left corner
+  seg(-cw, -h, cw, -h); // top edge
+
+  return points;
 }
 
 // Draw smooth closed cubic Bézier curves connecting the points
@@ -65,6 +86,42 @@ function drawClosedSpline(ctx, points) {
     ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, pNext[0], pNext[1]);
   }
   ctx.closePath();
+}
+
+// Measure the ink bounding box of the brand PNG (fraction of the full image
+// box, using alpha > 12). The mark's transparent margins are not symmetric,
+// so hugging the img box left the visible artwork sitting off-center inside
+// the wrap. Measuring the glyph itself keeps the square centered on the ink.
+function measureLogoInk(img) {
+  const nw = img.naturalWidth;
+  const nh = img.naturalHeight;
+  if (!nw || !nh) return null;
+  const c = document.createElement('canvas');
+  c.width = nw;
+  c.height = nh;
+  const cctx = c.getContext('2d');
+  if (!cctx) return null;
+  cctx.drawImage(img, 0, 0);
+  const data = cctx.getImageData(0, 0, nw, nh).data;
+  let minX = nw, minY = nh, maxX = -1, maxY = -1;
+  for (let y = 0; y < nh; y++) {
+    for (let x = 0; x < nw; x++) {
+      if (data[(y * nw + x) * 4 + 3] > 12) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (maxX < 0) return null;
+  return {
+    ready: true,
+    left: minX / nw,
+    top: minY / nh,
+    right: (maxX + 1) / nw,
+    bottom: (maxY + 1) / nh
+  };
 }
 
 export default function CustomCursor() {
@@ -116,6 +173,27 @@ export default function CustomCursor() {
     let isLogoHug = false;
     let logoEl = null;
     let logoRect = null;
+
+    // Ink metrics of the brand mark (measured once the png decodes). Hugging
+    // the ink box, not the img box, keeps the wrap centered on the artwork.
+    const logoInk = { ready: false, left: 0, top: 0, right: 1, bottom: 1 };
+    const inkImg = new Image();
+    inkImg.onload = () => {
+      const metrics = measureLogoInk(inkImg);
+      if (metrics) {
+        Object.assign(logoInk, metrics);
+        // Rects cached before the metrics arrived are stale now.
+        if (logoRect) {
+          logoRect = null;
+          needsDetect = true;
+        }
+      }
+    };
+    inkImg.src = '/logo-mark.png';
+    // Current hug half-extents — animated from the idle cursor size up to the
+    // logo box so the wrap grows in, instead of teleporting to full size.
+    let hugW = 14;
+    let hugH = 14;
 
     // Pointer tracking state (declared before the resize handler, which resets
     // the cached geometry).
@@ -230,10 +308,37 @@ export default function CustomCursor() {
       if (logoTarget) {
         if (!logoRect || logoTarget !== logoEl) {
           logoEl = logoTarget;
-          logoRect = logoTarget.getBoundingClientRect();
+          const box = logoTarget.getBoundingClientRect();
+          if (logoInk.ready) {
+            // Hug the measured ink box, not the img box, so the wrap is
+            // centered on the visible artwork (its transparent margins are
+            // not symmetric).
+            const inkW = logoInk.right - logoInk.left;
+            const inkH = logoInk.bottom - logoInk.top;
+            logoRect = {
+              left: box.left + box.width * logoInk.left,
+              top: box.top + box.height * logoInk.top,
+              width: box.width * inkW,
+              height: box.height * inkH
+            };
+          } else {
+            logoRect = box;
+          }
         }
         targetCenterX = logoRect.left + logoRect.width / 2;
         targetCenterY = logoRect.top + logoRect.height / 2;
+        // Snap on entry: the 0.12 chase lerp made the wrap visibly trail
+        // beside/below the mark for ~0.5s after hovering, which read as a
+        // misaligned wrap. Hug the mark from the first frame instead.
+        if (!isLogoHug) {
+          circleX = targetCenterX;
+          circleY = targetCenterY;
+          // Start at the idle cursor size so the wrap GROWS into the logo box
+          // (the same pop the buttons get from the radius lerp) instead of
+          // teleporting to full size.
+          hugW = 14;
+          hugH = 14;
+        }
         isHovering = true;
         isSticky = true;
         isLogoHug = true;
@@ -242,6 +347,11 @@ export default function CustomCursor() {
         return;
       }
 
+      if (isLogoHug) {
+        // Leaving the mark: hand the last hug size to the circle radius so
+        // the exit reads as a shrink back to the idle cursor, not a jump.
+        currentRadius = Math.min(hugW, hugH);
+      }
       isLogoHug = false;
       logoEl = null;
       logoRect = null;
@@ -353,12 +463,21 @@ export default function CustomCursor() {
       if (isLogoHug && logoRect) {
         // Shift-easter-egg: black rounded square wrapped around the nav logo,
         // wobbling gently (slower timing, smaller amplitude than the button).
-        const pad = 0;
+        // Uniform 4px clearance: with pad 0 the stroke ran along the mark's
+        // ink edges — merged at the glyph tops, hanging past the bottoms —
+        // which read as the wrap sitting low. Even breathing room fixes it.
+        const pad = 4;
+        // Grow from the idle cursor size into the logo box, centered on the
+        // mark: position stays snapped, only the size animates.
+        const targetHW = logoRect.width / 2 + pad;
+        const targetHH = logoRect.height / 2 + pad;
+        hugW = lerp(hugW, targetHW, 0.18);
+        hugH = lerp(hugH, targetHH, 0.18);
         const points = getLogoHugPoints(
           circleX,
           circleY,
-          logoRect.width / 2 + pad,
-          logoRect.height / 2 + pad,
+          hugW,
+          hugH,
           frameCount
         );
         drawClosedSpline(ctx, points);
