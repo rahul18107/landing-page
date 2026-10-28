@@ -128,7 +128,7 @@ function RotatingWord({ words }) {
   );
 }
 
-export default function Hero({ onJoinWaitlist }) {
+export default function Hero({ onJoinWaitlist, onGoogleSignedUp }) {
   const [googleError, setGoogleError] = useState('');
 
   const heroRef = useRef(null);
@@ -209,18 +209,23 @@ export default function Hero({ onJoinWaitlist }) {
     };
   }, []);
 
-  // Hero CTA: straight to Google's consent screen — no popup, no email form.
-  // The App-level auth listener completes the waitlist entry on return.
+  // Hero CTA: opens the Google account chooser in-page (it shows the site's
+  // own domain, not Supabase's) and hands the signed-in email to App, which
+  // stores it and opens the modal on the confirmation screen. The classic
+  // redirect only runs as a fallback — that return path is still completed by
+  // App's auth listener.
   const handleGoogleSignup = async () => {
     setGoogleError('');
     if (!supabaseConfigured) {
       setGoogleError('The backend is not configured yet. Supabase keys are missing.');
       return;
     }
-    const oauthError = await startGoogleSignup();
-    if (oauthError) {
+    const result = await startGoogleSignup();
+    if (result.error) {
       setGoogleError('Could not start Google sign-in. Please try again.');
+      return;
     }
+    if (result.email && onGoogleSignedUp) onGoogleSignedUp(result.email);
   };
 
   // Live breakpoint: a shared hook, so resizing across 768px re-lays out the

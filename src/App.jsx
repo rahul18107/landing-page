@@ -27,6 +27,27 @@ export default function App() {
   // modal opens straight on the confirmation screen.
   const [googleSignedUp, setGoogleSignedUp] = useState(false);
 
+  // Shared finisher for Google signups: stores the Google email on the waitlist
+  // and opens the modal on the confirmation screen. Used by the in-page popup
+  // flow (Hero) and by the redirect-return listener below.
+  const completeGoogleSignup = async (rawEmail) => {
+    const googleEmail = (rawEmail || '').trim().toLowerCase();
+    if (!googleEmail) return;
+    try {
+      const { error: insertError } = await supabase
+        .from('waitlist')
+        .insert({ email: googleEmail });
+      if (insertError && insertError.code !== '23505') {
+        // Unique-violation (already on the list) still counts as success.
+        console.error('[waitlist] Google signup insert failed:', insertError);
+      }
+    } catch (err) {
+      console.error('[waitlist] Google signup insert threw:', err);
+    }
+    setGoogleSignedUp(true);
+    setWaitlistOpen(true);
+  };
+
   useEffect(() => {
     if (!supabaseConfigured) return undefined;
 
@@ -55,23 +76,7 @@ export default function App() {
       }
       if (!googleEmail) return;
       localStorage.removeItem(WAITLIST_PENDING_KEY);
-      try {
-        const { error: insertError } = await supabase
-          .from('waitlist')
-          .insert({ email: googleEmail.trim().toLowerCase() });
-        if (insertError && insertError.code !== '23505') {
-          // Unique-violation (already on the list) still counts as success.
-          console.error('[waitlist] Google signup insert failed:', insertError);
-        } else {
-        if (import.meta.env.DEV) {
-          debug('[waitlist] Google email stored in waitlist table');
-        }
-        }
-      } catch (err) {
-        console.error('[waitlist] Google signup insert threw:', err);
-      }
-      setGoogleSignedUp(true);
-      setWaitlistOpen(true);
+      completeGoogleSignup(googleEmail);
     };
 
     // Subscribe BEFORE asking for the current session: the SIGNED_IN event
@@ -124,7 +129,7 @@ export default function App() {
       {/* Main Sections */}
       <main>
         {/* 2. Hero with Product Message, Email Signup & Phone Visual */}
-        <Hero onJoinWaitlist={() => setWaitlistOpen(true)} />
+        <Hero onJoinWaitlist={() => setWaitlistOpen(true)} onGoogleSignedUp={completeGoogleSignup} />
 
         
         {/* 3. Compact "How it works" section */}

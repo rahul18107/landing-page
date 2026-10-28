@@ -131,17 +131,42 @@ export default function WaitlistModal({ isOpen, onClose, preset = null }) {
     }
   };
 
-  // Real Google OAuth via Supabase: redirect to Google, then App.jsx picks up
-  // the session on return, stores the email, and shows the confirmation screen.
+  // Google signup: the Identity popup finishes in-page (the chooser shows the
+  // site's own domain). Signed in here → store the email exactly like the
+  // email form does, then show the confirmation screen. The classic redirect
+  // only runs as a fallback, and App.jsx completes that on return.
   const handleGoogle = async () => {
     setError('');
     if (!supabaseConfigured) {
       setError('The backend is not configured yet. Supabase keys are missing.');
       return;
     }
-    const oauthError = await startGoogleSignup();
-    if (oauthError) {
-      setError('Could not start Google sign-in. Please try again.');
+    setSubmitting(true);
+    setMethod('google');
+    try {
+      const result = await startGoogleSignup();
+      if (result.cancelled || result.redirecting) return;
+      if (result.error) {
+        setError('Could not start Google sign-in. Please try again.');
+        return;
+      }
+      // Unique-violation (already on the list) still counts as success.
+      const googleEmail = (result.email || '').trim().toLowerCase();
+      if (googleEmail) {
+        try {
+          const { error: insertError } = await supabase
+            .from('waitlist')
+            .insert({ email: googleEmail });
+          if (insertError && insertError.code !== '23505') {
+            console.error('[waitlist] Google signup insert failed:', insertError);
+          }
+        } catch (insertErr) {
+          console.error('[waitlist] Google signup insert threw:', insertErr);
+        }
+      }
+      setSubmitted(true);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -372,6 +397,7 @@ export default function WaitlistModal({ isOpen, onClose, preset = null }) {
               type="button"
               onClick={handleGoogle}
               data-cursor="pointer"
+              disabled={submitting}
               style={{
                 width: '100%',
                 display: 'flex',
@@ -386,16 +412,19 @@ export default function WaitlistModal({ isOpen, onClose, preset = null }) {
                 fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
                 fontWeight: 700,
                 fontSize: 15,
-                cursor: 'pointer',
+                cursor: submitting ? 'wait' : 'pointer',
+                opacity: submitting ? 0.75 : 1,
                 boxShadow: '0 10px 24px rgba(26, 26, 26, 0.28)',
                 transition: 'background 0.2s ease, color 0.2s ease, transform 0.2s ease'
               }}
               onMouseEnter={(e) => {
+                if (submitting) return;
                 e.currentTarget.style.background = '#F75E59';
                 e.currentTarget.style.color = '#1A1A1A';
                 e.currentTarget.style.transform = 'scale(1.015)';
               }}
               onMouseLeave={(e) => {
+                if (submitting) return;
                 e.currentTarget.style.background = '#1A1A1A';
                 e.currentTarget.style.color = '#ffffff';
                 e.currentTarget.style.transform = 'scale(1)';
@@ -419,6 +448,7 @@ export default function WaitlistModal({ isOpen, onClose, preset = null }) {
               <span style={{ display: 'block', position: 'relative', top: 0.5 }}>
                 Continue with Google
               </span>
+              {submitting && <Loader2 size={16} className="spin" />}
             </button>
           </div>
         ) : (
