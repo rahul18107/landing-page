@@ -15,7 +15,7 @@ const SECTIONS = [
 const BRAND_LOGO_HEIGHT = 44;
 // Local, pre-trimmed copy of the Cloudinary logo (e_trim baked in): no CDN
 // transform dependency, and the stable path is cached reliably.
-const BRAND_LOGO_URL = '/logo-mark.png';
+const BRAND_LOGO_URL = 'https://res.cloudinary.com/vx59z5ll/image/upload/f_svg/q_auto:best/dpr_auto/Untitled_design.svg';
 
 export default function Navbar({ onOpenWaitlist }) {
   const [scrolled, setScrolled] = useState(false);
