@@ -9,48 +9,32 @@ const SECTIONS = [
   { id: 'privacy', label: 'Privacy' }
 ];
 
-// One number controls the brand mark in BOTH navbar pills — they are two
-// separate JSX branches (desktop vs mobile), each with its own <img>, so
-// editing one file line never changed the variant you were looking at.
 const BRAND_LOGO_HEIGHT = 44;
-// Local, pre-trimmed copy of the Cloudinary logo (e_trim baked in): no CDN
-// transform dependency, and the stable path is cached reliably.
 const BRAND_LOGO_URL = 'https://res.cloudinary.com/vx59z5ll/image/upload/f_svg/q_auto:best/dpr_auto/Untitled_design.svg';
 
 export default function Navbar({ onOpenWaitlist }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
-  // Drawer focus bookkeeping. Focus must land somewhere sensible when the
-  // fullscreen menu opens (close button) and return to the opener when it
-  // closes — but never on first mount, when the menu simply started closed.
   const menuBtnRef = useRef(null);
   const closeBtnRef = useRef(null);
   const wasOpenRef = useRef(false);
 
-  // Live breakpoint, shared hook — same flip point as every other section.
   const isMobile = useIsMobile();
 
-  // Card scroll progress coming from the pinned watch-card section
   const [cardProgress, setCardProgress] = useState({
     active: 0,
     total: 0,
     inSection: false
   });
 
-  // Menu choreography: collapse the links, then swap in the dot indicator
   const [menuCollapsed, setMenuCollapsed] = useState(false);
   const [showDots, setShowDots] = useState(false);
   const [snap, setSnap] = useState(false);
   const phaseRef = useRef(false);
   const phaseTimer = useRef(null);
-  // Recent scroll speed in px/frame, so the swap can skip its animation when
-  // the reader is flying past sections faster than the choreography can play.
   const scrollSpeedRef = useRef(0);
 
-  // Drawer focus: entering the menu focuses its close button, leaving moves
-  // focus back to the hamburger. wasOpenRef keeps the mount-time run (menu
-  // starts closed) from stealing focus to the hamburger on page load.
   useEffect(() => {
     if (mobileMenuOpen) {
       closeBtnRef.current?.focus();
@@ -60,8 +44,6 @@ export default function Navbar({ onOpenWaitlist }) {
     wasOpenRef.current = mobileMenuOpen;
   }, [mobileMenuOpen]);
 
-  /* Scrolled state + active section. Geometry is cached and the handler runs
-     at most once per frame, so scrolling never forces repeated layout reads. */
   useEffect(() => {
     let raf = 0;
     let heroHeight = 600;
@@ -73,10 +55,8 @@ export default function Navbar({ onOpenWaitlist }) {
 
     const measure = () => {
       vh = window.innerHeight;
-
       const hero = document.getElementById('hero');
       heroHeight = hero ? hero.offsetHeight : 600;
-
       sections = [];
       for (const { id } of SECTIONS) {
         const el = document.getElementById(id);
@@ -93,8 +73,6 @@ export default function Navbar({ onOpenWaitlist }) {
     const update = () => {
       raf = 0;
       const y = window.scrollY;
-
-      // Smoothed distance travelled in the last frame (px/frame).
       scrollSpeedRef.current = scrollSpeedRef.current * 0.5 + Math.abs(y - prevY) * 0.5;
       prevY = y;
 
@@ -136,7 +114,6 @@ export default function Navbar({ onOpenWaitlist }) {
     window.addEventListener('resize', reschedule);
     window.addEventListener('load', reschedule);
 
-    // Re-cache if content above the anchor points changes height
     let ro = null;
     if (typeof ResizeObserver !== 'undefined' && document.body) {
       ro = new ResizeObserver(reschedule);
@@ -152,14 +129,12 @@ export default function Navbar({ onOpenWaitlist }) {
     };
   }, []);
 
-  /* Live card scroll progress -> navbar dot indicator */
   useEffect(() => {
     const handleProgress = (event) => setCardProgress(event.detail);
     window.addEventListener(CARD_PROGRESS_EVENT, handleProgress);
     return () => window.removeEventListener(CARD_PROGRESS_EVENT, handleProgress);
   }, []);
 
-  /* Swap between the text links and the dots as the card section takes over */
   useEffect(() => {
     const inSection = cardProgress.inSection;
     if (phaseRef.current === inSection) return;
@@ -167,8 +142,6 @@ export default function Navbar({ onOpenWaitlist }) {
     phaseRef.current = inSection;
     if (phaseTimer.current) clearTimeout(phaseTimer.current);
 
-    // Fast scroll: the collapse-then-swap sequence would still be playing by
-    // the time the reader is already past the section, so switch instantly.
     if (scrollSpeedRef.current > 55) {
       setSnap(true);
       setMenuCollapsed(false);
@@ -177,11 +150,9 @@ export default function Navbar({ onOpenWaitlist }) {
       return undefined;
     }
 
-    // 1. collapse the menu out
     setSnap(false);
     setMenuCollapsed(true);
 
-    // 2. once collapsed, cross-fade into the other state
     phaseTimer.current = setTimeout(() => {
       setShowDots(inSection);
       setMenuCollapsed(false);
@@ -253,9 +224,7 @@ export default function Navbar({ onOpenWaitlist }) {
                     display: 'flex',
                     alignItems: 'center',
                     cursor: 'pointer',
-                    // Same optical centering as the desktop pill: the artwork's
-                    // ink mass sits ~4.5px above its box center.
-                    transform: 'translateY(4.5px)',
+                    // ← transform: translateY(4.5px) removed — was pushing logo off-center
                     userSelect: 'none'
                   }}
                 >
@@ -303,9 +272,6 @@ export default function Navbar({ onOpenWaitlist }) {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                // Solid rather than a blurred translucent panel: the backdrop
-                // filter re-blurred the moving page every frame and was a
-                // major source of scroll stutter.
                 background: scrolled ? '#EFEFEF' : '#F0F0F0',
                 borderRadius: 18,
                 padding: '0 21px',
@@ -316,8 +282,6 @@ export default function Navbar({ onOpenWaitlist }) {
                   : '0 8px 24px rgba(0, 0, 0, 0.04)',
                 border: '1px solid rgba(26,26,26,0.08)',
                 whiteSpace: 'nowrap',
-                // Deliberately not `all` — transitioning width here fought the
-                // grid collapse and made the pill resize feel rubbery.
                 transition:
                   'background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
               }}
@@ -330,15 +294,8 @@ export default function Navbar({ onOpenWaitlist }) {
                   display: 'flex',
                   alignItems: 'center',
                   cursor: 'pointer',
-                  // No padding: the hover cursor-wrap hugs the artwork itself,
-                  // not a padded box around it (matches the mobile wrapper).
                   padding: 0,
-                  // Optical centering: the artwork's ink mass sits ~4.5px above
-                  // its geometric center (measured), so the box-centered mark
-                  // reads as floating high. Nudge down to center the MASS.
-                  // The wrapper (not the img) carries the transform so the
-                  // cursor-wrap rect follows the shifted mark.
-                  transform: 'translateY(4.5px)',
+                  // ← transform: translateY(4.5px) removed — was pushing logo off-center
                   userSelect: 'none',
                   flexShrink: 0
                 }}
@@ -466,11 +423,8 @@ export default function Navbar({ onOpenWaitlist }) {
             flexDirection: 'column',
             padding: '24px 28px',
             opacity: mobileMenuOpen ? 1 : 0,
-            // visibility takes the closed drawer out of the accessibility tree
-            // AND the tab order, so its links are not focusable while hidden.
             visibility: mobileMenuOpen ? 'visible' : 'hidden',
             pointerEvents: mobileMenuOpen ? 'auto' : 'none',
-            // On close, let the 0.3s fade finish before visibility drops.
             transition: mobileMenuOpen
               ? 'opacity 0.3s ease'
               : 'opacity 0.3s ease, visibility 0s linear 0.3s',
@@ -487,7 +441,6 @@ export default function Navbar({ onOpenWaitlist }) {
                 height: 24,
                 width: 'auto',
                 display: 'block',
-                // pure-black artwork -> solid light version for the dark drawer
                 filter: 'brightness(0) invert(1)'
               }}
             />
@@ -573,10 +526,6 @@ export default function Navbar({ onOpenWaitlist }) {
   );
 }
 
-/**
- * Scroll progress indicator for the watch-card section.
- * One dot per card — the active one stretches into a pill.
- */
 function CardDots({ total, active, variant = 'desktop' }) {
   if (!total) return null;
 
