@@ -68,19 +68,7 @@ export default function Footer({ onOpenWaitlist }) {
               device, no extra charger, and nothing new to remember.
             </p>
 
-            <p
-              style={{
-                fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
-                fontWeight: 400,
-                fontSize: 13,
-                color: 'rgba(26, 26, 26, 0.6)',
-                lineHeight: 1.5,
-                margin: 0
-              }}
-            >
-              *Currently a product concept in development. Smartwatch capture, transcription, and AI
-              features are subject to technical validation.
-            </p>
+            
           </div>
 
           {/* Action Button */}
