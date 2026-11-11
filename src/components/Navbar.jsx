@@ -11,6 +11,7 @@ const SECTIONS = [
 
 const BRAND_LOGO_HEIGHT = 44;
 const BRAND_LOGO_URL = 'https://res.cloudinary.com/vx59z5ll/image/upload/f_svg/q_auto:best/dpr_auto/Untitled_design.svg';
+const MOBILE_BRAND_LOGO_URL = '/logo-mark.png';
 
 export default function Navbar({ onOpenWaitlist }) {
   const [scrolled, setScrolled] = useState(false);
@@ -229,7 +230,7 @@ export default function Navbar({ onOpenWaitlist }) {
                   }}
                 >
                   <img
-                    src={BRAND_LOGO_URL}
+                    src={MOBILE_BRAND_LOGO_URL}
                     alt="XOOZ, back to top"
                     draggable={false}
                     style={{
@@ -252,7 +253,9 @@ export default function Navbar({ onOpenWaitlist }) {
                   color: '#fff',
                   border: 'none',
                   borderRadius: 43,
-                  padding: '10px 16px',
+                  width: 44,
+                  height: 44,
+                  padding: 0,
                   cursor: 'pointer',
                   display: 'flex',
                   gap: 4,
@@ -421,7 +424,8 @@ export default function Navbar({ onOpenWaitlist }) {
             background: '#1A1A1A',
             display: 'flex',
             flexDirection: 'column',
-            padding: '24px 28px',
+            padding: 'max(16px, env(safe-area-inset-top)) 24px max(16px, env(safe-area-inset-bottom))',
+            overflowY: 'auto',
             opacity: mobileMenuOpen ? 1 : 0,
             visibility: mobileMenuOpen ? 'visible' : 'hidden',
             pointerEvents: mobileMenuOpen ? 'auto' : 'none',
@@ -434,7 +438,7 @@ export default function Navbar({ onOpenWaitlist }) {
           {/* Top Close Row */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0' }}>
             <img
-              src={BRAND_LOGO_URL}
+              src={MOBILE_BRAND_LOGO_URL}
               alt="XOOZ"
               draggable={false}
               style={{
@@ -452,7 +456,11 @@ export default function Navbar({ onOpenWaitlist }) {
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
-                padding: 8,
+                width: 44,
+                height: 44,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 color: '#F75E59'
               }}
             >

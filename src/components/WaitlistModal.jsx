@@ -6,12 +6,14 @@ import {
   startGoogleSignup,
 } from '../lib/supabase';
 import GoogleMark from './GoogleMark.jsx';
+import useIsMobile from '../lib/useIsMobile';
 
 // Profile link for the "Follow along on X" nudge on the confirmation screen.
 // TODO: replace the placeholder with your real X profile URL.
 const X_PROFILE_URL = 'https://x.com/not_rahul_';
 
 export default function WaitlistModal({ isOpen, onClose, preset = null }) {
+  const isMobile = useIsMobile();
   const [email, setEmail] = useState('');
   const [method, setMethod] = useState('email');
   const [submitted, setSubmitted] = useState(false);
@@ -177,7 +179,7 @@ export default function WaitlistModal({ isOpen, onClose, preset = null }) {
     background: '#ffffff',
     border: '1.5px solid rgba(26, 26, 26, 0.2)',
     color: '#1A1A1A',
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
     fontWeight: 600,
     outline: 'none',
@@ -202,7 +204,7 @@ export default function WaitlistModal({ isOpen, onClose, preset = null }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 20,
+        padding: isMobile ? 12 : 20,
       }}
     >
       <div
@@ -212,13 +214,13 @@ export default function WaitlistModal({ isOpen, onClose, preset = null }) {
           background: '#F5F8E2',
           color: '#1A1A1A',
           borderRadius: 24,
-          padding: '40px 36px',
+          padding: isMobile ? '32px 20px' : '40px 36px',
           maxWidth: 460,
           width: '100%',
           border: '2px solid #1A1A1A',
           position: 'relative',
           boxShadow: '0 32px 80px rgba(0, 0, 0, 0.4)',
-          maxHeight: 'calc(100vh - 40px)',
+          maxHeight: isMobile ? 'calc(100dvh - 24px)' : 'calc(100vh - 40px)',
           overflowY: 'auto',
           boxSizing: 'border-box',
         }}

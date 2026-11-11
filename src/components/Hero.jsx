@@ -231,6 +231,18 @@ export default function Hero({ onJoinWaitlist, onGoogleSignedUp }) {
   // Live breakpoint: a shared hook, so resizing across 768px re-lays out the
   // hero instead of freezing whichever variant rendered first.
   const isMobile = useIsMobile();
+  const [viewportWidth, setViewportWidth] = useState(
+    typeof window !== 'undefined' ? window.innerWidth : 891
+  );
+
+  useEffect(() => {
+    const updateWidth = () => setViewportWidth(window.innerWidth);
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
+
+  const deviceWidth = isMobile ? Math.min(viewportWidth, 520) : 891;
+  const deviceScale = deviceWidth / 891;
 
   return (
     <section
@@ -267,8 +279,8 @@ export default function Hero({ onJoinWaitlist, onGoogleSignedUp }) {
           style={{
             fontFamily: "'Glonimove', 'Plus Jakarta Sans', sans-serif",
             fontWeight: 900,
-            fontSize: isMobile ? 40 : 78,
-            lineHeight: isMobile ? '46px' : '82px',
+            fontSize: isMobile ? 'clamp(31px, 10vw, 40px)' : 78,
+            lineHeight: isMobile ? 1.12 : '82px',
             letterSpacing: isMobile ? '-1px' : '-2px',
             color: '#1A1A1A',
             margin: 0,
@@ -375,14 +387,15 @@ export default function Hero({ onJoinWaitlist, onGoogleSignedUp }) {
         ref={deviceRef}
         style={{
           position: 'relative',
-          width: 891,
-          height: 634,
-          marginTop: isMobile ? 'auto' : 32,
+          width: deviceWidth,
+          height: 634 * deviceScale,
+          marginTop: isMobile ? 24 : 32,
           flexShrink: 0,
           transformOrigin: isMobile ? '50% 100%' : '50% 40%',
           willChange: 'transform'
         }}
       >
+        <div style={{ position: 'absolute', width: 891, height: 634, transform: `scale(${deviceScale})`, transformOrigin: 'top left' }}>
         {/* Real Transparent WebP Mockup of Two Hands Holding Phone */}
         <img
           src="/phone-hands.webp"
@@ -424,7 +437,7 @@ export default function Hero({ onJoinWaitlist, onGoogleSignedUp }) {
             muted
             loop
             playsInline
-            preload="auto"
+            preload={isMobile ? 'metadata' : 'auto'}
             fetchpriority="high"
             style={{
               position: 'absolute',
@@ -457,6 +470,7 @@ export default function Hero({ onJoinWaitlist, onGoogleSignedUp }) {
             pointerEvents: 'none'
           }}
         />
+        </div>
       </div>
     </section>
   );

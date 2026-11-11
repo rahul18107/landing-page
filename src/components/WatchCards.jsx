@@ -673,6 +673,7 @@ function WatchCard({ watch, mobile = false }) {
             src={watch.image}
             alt={watch.brand}
             draggable={false}
+            loading="lazy"
             decoding="async"
             style={{
               width: '100%',
